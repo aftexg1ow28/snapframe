@@ -48,7 +48,7 @@
   left: 50%;
   transform: translateX(-50%);
   /* [지은] 수정: 원래 height: 490px 고정. 가운데 영역 높이 + 25px (위로 9px, 아래로 16px 나가서 버튼과 16px 겹침) */
-  height: calc(100% + 25px);
+  height: calc(100% + 15px);
   max-height: 520px; /* [지은] 추가: 큰 화면에서 너무 커지지 않게 */
   width: auto;
   max-width: 100%; /* [지은] 추가 */
