@@ -1,95 +1,158 @@
 .home {
+  position: relative;
   box-sizing: border-box;
   width: 100%;
   max-width: 430px;
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 24px 24px 20px;
+  padding: 0 24px 20px;
   display: flex;
   flex-direction: column;
-  background: #f3eee6;
-  color: #1c1b22;
-  text-align: left;
+  overflow-x: clip;
 }
 
+/* 커튼: 화면 전체를 덮었다가 양옆으로 열려요 */
+.home-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  pointer-events: none;
+}
+.home-curtain span {
+  flex: 1;
+  background: repeating-linear-gradient(90deg, var(--color-ink) 0 16px, #34333f 16px 32px);
+}
+.home-curtain span:first-child {
+  border-right: var(--line) solid var(--color-brand);
+  animation: curtain-left 0.9s cubic-bezier(0.7, 0, 0.3, 1) 0.25s forwards;
+}
+.home-curtain span:last-child {
+  border-left: var(--line) solid var(--color-brand);
+  animation: curtain-right 0.9s cubic-bezier(0.7, 0, 0.3, 1) 0.25s forwards;
+}
+@keyframes curtain-left { to { transform: translateX(-101%); } }
+@keyframes curtain-right { to { transform: translateX(101%); } }
+
+/* 전광판 */
+.home-ticker {
+  margin: 0 -24px;
+  overflow: hidden;
+  background: var(--color-ink);
+  color: var(--color-brand);
+  font-family: var(--font-title);
+  font-size: 13px; /* [지은] 수정: 15px → 13px */
+  letter-spacing: 0.1em;
+  white-space: pre; /* [지은] 수정: 줄 끝 띄어쓰기가 사라지는 문제 (★SMILE) 해결 */
+}
+.home-ticker-track {
+  display: flex;
+  width: max-content;
+  padding: 6px 0; /* [지은] 수정: 8px → 6px */
+  animation: ticker 18s linear infinite;
+}
+@keyframes ticker { to { transform: translateX(-50%); } }
+
+/* 로고 줄 */
+.home-top { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
 .home-logo {
   margin: 0;
-  text-align: center;
-  font-family: var(--font-title, inherit);
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 1.2;
+  font-size: 36px;
+  line-height: 1;
+  text-shadow: 3px 3px 0 var(--color-brand);
 }
-.home-title {
-  margin: 30px 0 11px;
-  font-size: 46px;
-  font-weight: 300;
-  line-height: 52px;
-}
-.home-desc {
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.35;
-  color: #555;
-}
-
-/* 가운데 영역: 프레임 이미지가 아래 버튼 위로 살짝 겹쳐요 */
-.home-hero {
-  position: relative;
-  flex: 1;
-  /* [지은] 수정: 원래 440px. 화면이 낮으면 줄어들게 하고, 이보다 더 작아지면 스크롤 */
-  min-height: 220px;
-}
-.home-frame {
-  position: absolute;
-  z-index: 2;
-  top: -9px;
-  left: 50%;
-  transform: translateX(-50%);
-  /* [지은] 수정: 원래 height: 490px 고정. 가운데 영역 높이 + 25px (위로 9px, 아래로 16px 나가서 버튼과 16px 겹침) */
-  height: calc(100% + 15px);
-  max-height: 520px; /* [지은] 추가: 큰 화면에서 너무 커지지 않게 */
-  width: auto;
-  max-width: 100%; /* [지은] 추가 */
-  object-fit: contain; /* [지은] 추가: 폭이 모자라도 그림이 찌그러지지 않게 */
-  pointer-events: none; /* 겹친 버튼도 눌리게 */
-}
-
-.home-buttons {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 12px;
-}
-.home-btn {
-  flex: 1;
-  box-sizing: border-box;
-  height: 62px;
-  display: flex;
+.home-open {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 3px solid #1c1b22;
-  border-radius: 31px;
-  color: #1c1b22;
+  gap: 6px;
+  padding: 6px 12px;
+  border: var(--line) solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard-sm);
+  font-size: 13px;
+  font-weight: 800;
+}
+.home-open i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-red);
+  animation: blink 1.2s steps(2, start) infinite;
+}
+@keyframes blink { to { visibility: hidden; } }
+
+/* 제목 */
+.home-title { margin: 24px 0 0; font-size: 48px; line-height: 1.12; } /* [지은] 수정: 52px → 48px */
+.home-title mark {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0 10px;
+  background: var(--color-brand);
+  color: var(--color-ink);
+  border: var(--line) solid var(--color-ink);
+  box-shadow: var(--shadow-hard);
+  transform: rotate(-2deg);
+}
+
+/* 한 줄 소개 */
+.home-desc {
+  margin: 16px 0 0; /* [지은] 수정: 위 여백을 늘려 제목과 떨어뜨림 */
   font-size: 18px;
-  font-weight: 700;
-  text-decoration: none;
+  font-weight: 500; /* [지은] 수정: 앞부분은 보통 굵기, CATCH ON!만 굵게 */
+  line-height: 1.4;
 }
-.home-btn-primary { flex: 1.5; background: #ffd900; }
-.home-btn-outline { background: transparent; }
-
-.home-note {
-  margin: 14px 0 0;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
+.home-desc b {
+  padding: 0 2px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(transparent 58%, var(--color-brand) 58%); /* 형광펜 */
 }
 
-/* [지은] 추가: 낮은 화면(iPhone SE 등)에서는 글자와 여백을 줄여서 한 화면에 들어오게 */
+/* 가운데: 인화 슬롯 + 스트립 */
+.home-hero { position: relative; flex: 1; min-height: 240px; margin: 20px 0 16px; overflow: hidden; }
+.home-slot {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 50%;
+  width: 70%;
+  height: 14px;
+  transform: translateX(-50%);
+  background: var(--color-ink);
+  border-radius: 0 0 12px 12px;
+}
+.home-slot::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 14px;
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-brand);
+}
+.home-frame-wrap { position: absolute; inset: 0; display: flex; justify-content: center; }
+.home-frame {
+  height: 100%;
+  max-height: 480px; /* [지은] 추가: 프레임이 너무 커져서 답답해지는 것을 막음 */
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  animation: print-out 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s both;
+}
+
+/* 버튼 */
+.home-buttons { display: flex; gap: 12px; }
+.home-buttons .btn { flex: 1; }
+.home-buttons .btn-primary { flex: 1.5; }
+.home-note { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--color-muted); }
+
+/* 낮은 화면 (iPhone SE 등) */
 @media (max-height: 740px) {
-  .home { padding-top: 16px; }
-  .home-title { margin: 20px 0 8px; font-size: 38px; line-height: 44px; }
-  .home-desc { font-size: 15px; }
+  .home-top { margin-top: 12px; }
+  .home-title { margin: 14px 0 0; font-size: 38px; }
+  .home-desc { margin-top: 10px; font-size: 16px; }
+  .home-hero { margin: 14px 0 12px; }
 }

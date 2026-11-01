@@ -1,15 +1,17 @@
-// [담당: 원영] 3. 카메라 — 템플릿에 따라 촬영 화면 비율이 다름
+// [담당: 원영] 3. 카메라 – 템플릿에 따라 촬영 화면 비율이 다름
 //  - 전면/후면 전환, 3·2·1 카운트다운 후 촬영, 6컷이 차면 /select 로 자동 이동
 //  - 타이머는 기본 켜짐. 셔터 옆 버튼으로 끄면 누르는 즉시 촬영 (선택은 브라우저에 기억)
 //  - 카메라 접근: navigator.mediaDevices.getUserMedia (HTTPS 또는 localhost 에서만 동작)
 //  - 캡처: utils/composeImage.js 의 captureFromVideo(video, template.cameraRatio, 거울모드)
 //  - 미리보기 상자의 비율 = 촬영되는 비율이라서 화면에 보이는 그대로 찍힘
-
+// [지은] 수정 (11/01): 실시간 필터 추가 (filterId 상태, FilterBar, captureFromVideo에 filter 전달)
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePhoto } from '../context/PhotoContext.jsx'
 import { TOTAL_SHOTS } from '../constants/templates.js'
+import { FILTERS } from '../constants/filters.js' // [지은] 추가
+import FilterBar from '../components/FilterBar.jsx' // [지은] 추가
 import { captureFromVideo } from '../utils/composeImage.js'
 import './Camera.css'
 
@@ -63,10 +65,15 @@ export default function Camera() {
   const [timerOn, setTimerOn] = useState(loadTimerOn) // true면 3·2·1 후 촬영, false면 바로 촬영
   const lastShotAt = useRef(0) // 마지막으로 찍은 시각 (연타 방지용)
 
-  // 타이머 안에서 "가장 최신 값"을 읽기 위한 보관함 
+  // [지은] 추가: 지금 고른 필터 (기본은 원본)
+  const [filterId, setFilterId] = useState('none')
+  const filter = FILTERS.find((f) => f.id === filterId) ?? FILTERS[0]
+
+  // 타이머 안에서 "가장 최신 값"을 읽기 위한 보관함
   const latest = useRef({})
   useEffect(() => {
-    latest.current = { mirrored, ratio: template.cameraRatio, taken, addShot }
+    // [지은] 수정: filterCss 추가 (카운트다운 중에 필터를 바꿔도 찍는 순간의 값을 쓰려고)
+    latest.current = { mirrored, ratio: template.cameraRatio, taken, addShot, filterCss: filter.css }
   })
 
   // 카메라 화면에 들어오면 항상 처음부터 새로 찍기
@@ -75,7 +82,6 @@ export default function Camera() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  
   useEffect(() => {
     let cancelled = false
     let stream = null
@@ -89,7 +95,7 @@ export default function Camera() {
           video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
           audio: false,
         })
-        
+
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop())
           return
@@ -108,7 +114,6 @@ export default function Camera() {
     }
     start()
 
-    
     return () => {
       cancelled = true
       stream?.getTracks().forEach((t) => t.stop())
@@ -123,8 +128,8 @@ export default function Camera() {
     const now = Date.now()
     if (now - lastShotAt.current < MIN_GAP_MS) return // 방금 찍었으면 무시
     lastShotAt.current = now
-    const { mirrored, ratio, taken, addShot } = latest.current
-    addShot(captureFromVideo(video, ratio, mirrored))
+    const { mirrored, ratio, taken, addShot, filterCss } = latest.current // [지은] 수정: filterCss 추가
+    addShot(captureFromVideo(video, ratio, mirrored, filterCss)) // [지은] 수정: 필터 전달
     setFlash(true)
     setTimeout(() => setFlash(false), 200)
     if (taken + 1 >= TOTAL_SHOTS) setFinished(true)
@@ -152,7 +157,7 @@ export default function Camera() {
   }, [finished, navigate])
 
   const canShoot = ready && count == null && !finished
-  // 셔터: 타이머가 켜져 있으면 카운트다운 시작 꺼져 있으면 바로 촬영
+  // 셔터: 타이머가 켜져 있으면 카운트다운 시작, 꺼져 있으면 바로 촬영
   const shoot = () => {
     if (!canShoot) return
     if (timerOn) setCount(COUNTDOWN_START)
@@ -189,7 +194,7 @@ export default function Camera() {
         <span className="cam-title">{shotNumber} / {TOTAL_SHOTS} 컷</span>
         <button className="cam-flip" onClick={flip} aria-label="전면과 후면 카메라 전환">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 7H8a4 4 0 0 0-4 4v1" />
             <path d="M17 4l3 3-3 3" />
             <path d="M4 17h12a4 4 0 0 0 4-4v-1" />
@@ -204,6 +209,7 @@ export default function Camera() {
           <video
             ref={videoRef}
             className={`cam-video${mirrored ? ' is-mirrored' : ''}`}
+            style={{ filter: filter.css }} // [지은] 추가: 미리보기에 필터 적용
             autoPlay
             playsInline
             muted
@@ -211,6 +217,9 @@ export default function Camera() {
           />
           <span className="cam-chip cam-chip-top">{facing === 'user' ? '전면 카메라' : '후면 카메라'}</span>
           <span className="cam-chip cam-chip-bottom">{hint}</span>
+
+          {/* [지은] 추가: 필터 선택 줄 (카운트다운 중이거나 촬영이 끝났으면 못 바꿈) */}
+          <FilterBar value={filterId} onChange={setFilterId} disabled={count != null || finished} />
 
           {count != null && <div className="cam-count" aria-live="assertive">{count}</div>}
           {flash && <div className="cam-flash" />}
@@ -247,7 +256,7 @@ export default function Camera() {
           aria-label={timerOn ? `타이머 켜짐 ${COUNTDOWN_START}초, 누르면 끄기` : '타이머 꺼짐, 누르면 켜기'}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="13" r="8" />
             <path d="M12 9v4l2.5 2.5" />
             <path d="M9.5 2h5" />

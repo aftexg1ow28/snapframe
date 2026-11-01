@@ -1,0 +1,21 @@
+.cp {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 6px;
+  padding: 6px 4px 8px;
+}
+.cp-dot {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2.5px solid var(--color-ink);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.cp-dot:hover { transform: translateY(-2px); }
+.cp-dot.is-selected {
+  transform: translate(-2px, -2px) scale(1.15);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}

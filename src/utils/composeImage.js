@@ -112,7 +112,8 @@ export async function composeImage({ template, photos, rotations = [], frameColo
 // 영상(video)에서 한 장 캡처: 칸 비율(ratio = 가로/세로)에 맞게 가운데를 잘라요.
 // mirror가 true면 좌우를 뒤집어요 (전면 카메라는 미리보기가 거울처럼 보이니까, 찍힌 사진도 똑같이 맞춰요)
 // 용량을 줄이려고 JPEG(품질 0.92)로 만들어요. 6장을 메모리에 들고 있어야 해서 PNG보다 훨씬 가벼워요.
-export function captureFromVideo(video, ratio, mirror = false) {
+// [지은] 수정 (11/01): filter(CSS filter 문자열)를 받아서 사진에 구워 넣어요. 안 주면 'none'
+export function captureFromVideo(video, ratio, mirror = false, filter = 'none') {
   const vw = video.videoWidth
   const vh = video.videoHeight
   let sw = vw
@@ -127,6 +128,7 @@ export function captureFromVideo(video, ratio, mirror = false) {
   canvas.width = sw
   canvas.height = sh
   const ctx = canvas.getContext('2d')
+  if (filter && filter !== 'none') ctx.filter = filter // [지은] 추가: 이후에 그리는 그림에 필터가 적용돼요
   if (mirror) {
     ctx.translate(canvas.width, 0)
     ctx.scale(-1, 1)

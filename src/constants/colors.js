@@ -10,4 +10,4 @@ export const FRAME_COLORS = [
   { name: '파랑', hex: '#7aacee' },
   { name: '남색', hex: '#4e5a9c' },
   { name: '보라', hex: '#9f7ecd' },
-];
+]

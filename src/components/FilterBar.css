@@ -1,0 +1,29 @@
+.fb {
+  position: absolute;
+  z-index: 3;
+  left: 8px;
+  right: 8px;
+  bottom: 46px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 4px;
+  scrollbar-width: none;
+}
+.fb::-webkit-scrollbar { display: none; }
+
+.fb-chip {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.fb-chip.is-on { background: var(--color-brand); box-shadow: 2px 2px 0 var(--color-ink); }
+.fb-chip:disabled { opacity: 0.5; cursor: not-allowed; }

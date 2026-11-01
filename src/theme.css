@@ -1,0 +1,153 @@
+/* ===== theme.css : 스냅프레임 2차 디자인 (네오브루탈 + 포토부스) ===== */
+/* index.css 바로 뒤에 불러와요. index.css의 변수는 그대로 쓰고, 여기서는 이름만 추가해요. */
+
+:root {
+  /* 색 추가 (사진 컷 색 + 램프 색) */
+  --color-white: #ffffff;
+  --color-pink: #ff9b85;
+  --color-mint: #a0d3c5;
+  --color-lilac: #b8b0ee;
+  --color-red: #e5392b;
+
+  /* 모양 */
+  --line: 3px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-hard-sm: 3px 3px 0 var(--color-ink);
+  --shadow-hard: 6px 6px 0 var(--color-ink);
+
+  /* 간격 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+}
+
+/* 배경: 종이색 + 작은 점 무늬(하프톤) */
+body {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(rgba(27, 26, 34, 0.14) 1.2px, transparent 1.4px);
+  background-size: 18px 18px;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-title);
+  font-weight: 400;
+}
+
+/* 화면 공통 틀 (선배가 만든 화면들이 사용해요) */
+.screen {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* 버튼: 두꺼운 테두리 + 하드 그림자, 누르면 눌려요 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 20px;
+  border: var(--line) solid var(--color-ink);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: var(--shadow-hard-sm);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--color-ink); }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--color-ink); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+.btn-primary { background: var(--color-brand); }
+.btn-lg { min-height: 62px; font-size: 18px; border-radius: var(--radius-lg); }
+
+/* 카드·스티커 (다른 화면에서도 쓸 수 있는 부품) */
+.card {
+  border: var(--line) solid var(--color-ink);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard-sm);
+}
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: var(--line) solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-brand);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: var(--shadow-hard-sm);
+}
+
+/* 진행 표시 (StepBar 부품이 사용해요) */
+.stepbar { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.stepbar-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0.5;
+}
+.stepbar-item.is-done { opacity: 1; background: var(--color-mint); }
+.stepbar-item.is-now { opacity: 1; background: var(--color-brand); box-shadow: var(--shadow-hard-sm); }
+.stepbar-num {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 11px;
+}
+
+/* 움직임 */
+@keyframes pop {
+  0% { transform: scale(0.88) rotate(-2deg); }
+  60% { transform: scale(1.04) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.pop-in { animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3); }
+
+@keyframes print-out {
+  from { transform: translateY(-110%); }
+  to { transform: translateY(0); }
+}
+.print-window { overflow: hidden; padding: 0 12px 12px 0; } /* 인화 창: 밖으로 나가면 잘려요 */
+.print-in { animation: print-out 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* 움직임이 불편한 사람을 위해 애니메이션을 거의 없애요 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
