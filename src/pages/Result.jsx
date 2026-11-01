@@ -40,7 +40,7 @@ export default function Result() {
     if (slotPhotos.length === 0 || slotPhotos.some((p) => p == null)) return
     let cancelled = false
     const slotRotations = slots.map((idx) => (idx == null ? 0 : rotations[idx] ?? 0))
-    comcomposeImage({ template, photos: slotPhotos, rotations: slotRotations, frameColor, frameStyle, date })
+ composeImage({ template, photos: slotPhotos, rotations: slotRotations, frameColor, frameStyle, date })
   .then((url) => { if (!cancelled) setComposed(url) })
       .catch(() => { if (!cancelled) setComposed(null) })
     return () => { cancelled = true }
