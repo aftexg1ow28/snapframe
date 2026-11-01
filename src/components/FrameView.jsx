@@ -34,31 +34,32 @@ function todayText() {
   ].join('.')
 }
 
-// [지은] 패턴별 CSS 스타일 반환 함수
+// [지은] 패턴별 CSS 스타일 반환 함수 (밝은 배경 대응 수정)
 function getPatternStyles(bgColor, patType) {
   const base = { backgroundColor: bgColor }
-  const overlay = 'rgba(255, 255, 255, 0.5)' // 패턴을 그릴 반투명 흰색
-  
+  // 배경이 밝으면 어두운 무늬, 어두우면 밝은 무늬 적용
+  const overlay = isLight(bgColor) ? 'rgba(0, 0, 0, 0.18)' : 'rgba(255, 255, 255, 0.5)'
+
   switch (patType) {
     case 'gradient':
-      return { background: `linear-gradient(135deg, ${bgColor}, #ffffff)` }
+      return { background: `linear-gradient(135deg, ${bgColor}, ${isLight(bgColor) ? '#d0d0d0' : '#ffffff'})` }
     case 'stripe':
-      return { 
-        ...base, 
-        backgroundImage: `linear-gradient(135deg, ${overlay} 25%, transparent 25%, transparent 50%, ${overlay} 50%, ${overlay} 75%, transparent 75%, transparent)`, 
-        backgroundSize: '20px 20px' 
+      return {
+        ...base,
+        backgroundImage: `linear-gradient(135deg, ${overlay} 25%, transparent 25%, transparent 50%, ${overlay} 50%, ${overlay} 75%, transparent 75%, transparent)`,
+        backgroundSize: '20px 20px'
       }
     case 'check':
-      return { 
-        ...base, 
-        backgroundImage: `conic-gradient(from 0deg, ${overlay} 90deg, transparent 90deg 180deg, ${overlay} 180deg 270deg, transparent 270deg)`, 
-        backgroundSize: '20px 20px' 
+      return {
+        ...base,
+        backgroundImage: `conic-gradient(from 0deg, ${overlay} 90deg, transparent 90deg, transparent 180deg, ${overlay} 180deg 270deg, transparent 270deg)`,
+        backgroundSize: '20px 20px'
       }
     case 'dot':
-      return { 
-        ...base, 
-        backgroundImage: `radial-gradient(circle at 10px 10px, ${overlay} 4px, transparent 4.5px)`, 
-        backgroundSize: '20px 20px' 
+      return {
+        ...base,
+        backgroundImage: `radial-gradient(circle at 10px 10px, ${overlay} 4px, transparent 4.5px)`,
+        backgroundSize: '20px 20px'
       }
     case 'solid':
     default:

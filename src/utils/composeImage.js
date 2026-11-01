@@ -99,7 +99,10 @@ export async function composeImage({ template, photos, rotations = [], frameColo
 
     pCtx.fillStyle = frameColor
     pCtx.fillRect(0, 0, 20, 20)
-    pCtx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+
+    // 배경이 밝으면 어두운 무늬 색상 적용
+    const overlayColor = isLight(frameColor) ? 'rgba(0, 0, 0, 0.18)' : 'rgba(255, 255, 255, 0.5)'
+    pCtx.fillStyle = overlayColor
 
     if (frameStyle === 'stripe') {
       pCtx.beginPath()
@@ -107,7 +110,7 @@ export async function composeImage({ template, photos, rotations = [], frameColo
       pCtx.beginPath()
       pCtx.moveTo(20, 20); pCtx.lineTo(10, 20); pCtx.lineTo(20, 10); pCtx.fill()
       pCtx.beginPath()
-      pCtx.moveTo(20, 0); pCtx.lineTo(0, 20); pCtx.lineTo(10, 20); pCtx.lineTo(20, 10); pCtx.fill()
+      pCtx.moveTo(20, 0); pCtx.lineTo(0, 20); pCtx.lineTo(20, 10); pCtx.fill() // 대각선 스트라이프 보완
     } else if (frameStyle === 'check') {
       pCtx.fillRect(0, 0, 10, 10)
       pCtx.fillRect(10, 10, 10, 10)
@@ -116,7 +119,7 @@ export async function composeImage({ template, photos, rotations = [], frameColo
       pCtx.arc(10, 10, 4, 0, Math.PI * 2)
       pCtx.fill()
     }
-    
+
     ctx.fillStyle = ctx.createPattern(patCanvas, 'repeat')
     ctx.fillRect(0, 0, frameW, frameH)
   }
