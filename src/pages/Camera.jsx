@@ -1,17 +1,16 @@
-// [담당: 원영] 3. 카메라 – 템플릿에 따라 촬영 화면 비율이 다름
-//  - 전면/후면 전환, 3·2·1 카운트다운 후 촬영, 6컷이 차면 /select 로 자동 이동
-//  - 타이머는 기본 켜짐. 셔터 옆 버튼으로 끄면 누르는 즉시 촬영 (선택은 브라우저에 기억)
-//  - 카메라 접근: navigator.mediaDevices.getUserMedia (HTTPS 또는 localhost 에서만 동작)
-//  - 캡처: utils/composeImage.js 의 captureFromVideo(video, template.cameraRatio, 거울모드)
-//  - 미리보기 상자의 비율 = 촬영되는 비율이라서 화면에 보이는 그대로 찍힘
-// [지은] 수정 (11/01): 실시간 필터 추가 (filterId 상태, FilterBar, captureFromVideo에 filter 전달)
+// [담당: 원영] 3. 카메라 - 템플릿에 따라 촬영 화면 비율이 다름
+// - 전면/후면 전환, 3·2·1 카운트다운 후 촬영, 6컷이 차면 /select 로 자동 이동
+// - 타이머는 기본 켜짐. 셔터 옆 버튼으로 끄면 누르는 즉시 촬영 (선택은 브라우저에 기억)
+// - 카메라 접근: navigator.mediaDevices.getUserMedia (HTTPS 또는 localhost 에서만 동작)
+// - 캡처: utils/composeImage.js 의 captureFromVideo(video, template.cameraRatio, 거울모드)
+// - [지은] 수정 (11/01): 실시간 필터 추가 (filterId 상태, FilterBar, captureFromVideo에 filter 전달)
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePhoto } from '../context/PhotoContext.jsx'
 import { TOTAL_SHOTS } from '../constants/templates.js'
-import { FILTERS } from '../constants/filters.js' // [지은] 추가
-import FilterBar from '../components/FilterBar.jsx' // [지은] 추가
+import { FILTERS } from '../constants/filters.js'
+import FilterBar from '../components/FilterBar.jsx'
 import { captureFromVideo } from '../utils/composeImage.js'
 import './Camera.css'
 
@@ -184,18 +183,18 @@ export default function Camera() {
     template.cameraRatio === 1
       ? '정사각형으로 찍혀요'
       : template.orientation === 'landscape'
-        ? '폰을 가로로 돌려 찍어요'
-        : '세로로 찍혀요'
+      ? '폰을 가로로 돌려 찍어요'
+      : '세로로 찍혀요'
 
   return (
     <div className="screen camera">
       <header className="cam-header">
-        <Link to="/template" className="cam-back">‹ 이전</Link>
+        <Link to="/template" className="cam-back">◁ 이전</Link>
         <span className="cam-title">{shotNumber} / {TOTAL_SHOTS} 컷</span>
         <button className="cam-flip" onClick={flip} aria-label="전면과 후면 카메라 전환">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M20 7H8a4 4 0 0 0-4 4v1" />
+            <path d="M20 7h-8a4 4 0 0 0-4 4v1" />
             <path d="M17 4l3 3-3 3" />
             <path d="M4 17h12a4 4 0 0 0 4-4v-1" />
             <path d="M7 20l-3-3 3-3" />
@@ -209,7 +208,7 @@ export default function Camera() {
           <video
             ref={videoRef}
             className={`cam-video${mirrored ? ' is-mirrored' : ''}`}
-            style={{ filter: filter.css }} // [지은] 추가: 미리보기에 필터 적용
+            style={{ filter: filter.css }}
             autoPlay
             playsInline
             muted
@@ -218,8 +217,10 @@ export default function Camera() {
           <span className="cam-chip cam-chip-top">{facing === 'user' ? '전면 카메라' : '후면 카메라'}</span>
           <span className="cam-chip cam-chip-bottom">{hint}</span>
 
-          {/* [지은] 추가: 필터 선택 줄 (카운트다운 중이거나 촬영이 끝났으면 못 바꿈) */}
-          <FilterBar value={filterId} onChange={setFilterId} disabled={count != null || finished} />
+          {/* [지은] 수정: 촬영 완료 시 알림창과 겹치지 않게 필터 선택 줄 숨기기 */}
+          {!finished && (
+            <FilterBar value={filterId} onChange={setFilterId} disabled={count != null} />
+          )}
 
           {count != null && <div className="cam-count" aria-live="assertive">{count}</div>}
           {flash && <div className="cam-flash" />}
