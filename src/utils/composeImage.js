@@ -1,17 +1,18 @@
 // [담당: 원영] canvas로 프레임 + 사진 4장을 합쳐 최종 이미지
-//
+// 
 // 입력
-//   template   : TEMPLATES 중 하나 (cols, slots, slotRatio 사용)
-//   photos     : 칸 순서대로 정리된 사진 주소 배열 (길이 4)
-//   rotations  : photos와 같은 순서의 회전 각도 (0/90/180/270...)
-//   frameColor : 프레임 배경색
-//   date       : 'YYYY.MM.DD' 문자열
+//   template  : TEMPLATES 중 하나 (cols, slots, slotRatio 사용)
+//   photos    : 칸 순서대로 정리된 사진 주소 배열 (길이 4)
+//   rotations : photos와 같은 순서의 회전 각도 (0/90/180/270...)
+//   frameColor: 프레임 배경색
+//   frameStyle: 프레임 무늬 [지은 추가]
+//   date      : 'YYYY.MM.DD' 문자열
 // 출력
 //   Promise<string> : 완성된 이미지의 dataURL (png)
 //
 // 모양은 components/FrameView.jsx(화면 미리보기)와 똑같이 /아래 숫자들은 FrameView 값
-//  - 프레임 가로(FRAME_WIDTH), 안쪽 여백 12 / 12 / 22, 칸 사이 간격 8, 글자 크기 11
-//  - 미리보기는 화면 픽셀이라 작아서 SCALE배 키워서 선명하게
+// - 프레임 가로(FRAME_WIDTH), 안쪽 여백 12 / 12 / 22, 칸 사이 간격 8, 글자 크기 11
+// - 미리보기는 화면 픽셀이라 작아서 SCALE배 키워서 선명하게
 const SCALE = 4
 const FRAME_WIDTH = { basic: 150, tall: 220, square: 240 } // FrameView.jsx 와 같게 유지
 const PAD_X = 12
@@ -31,7 +32,7 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150
 }
 
-// 사진 주소 → 그릴 수 있는 이미지로
+// 사진 주소 -> 그릴 수 있는 이미지로
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -44,12 +45,13 @@ function loadImage(src) {
 // 사진을 칸(x, y, w, h)에 꽉 채워(cover) 그리기. rotation만큼 돌려서
 function drawCover(ctx, img, x, y, w, h, rotation) {
   const turns = (((rotation / 90) % 4) + 4) % 4 // 0~3
-  const sideways = turns % 2 === 1 // 90°, 270°면 가로세로가 바꾸기
+  const sideways = turns % 2 === 1 // 90º, 270º면 가로세로가 바꾸기
   const boxW = sideways ? h : w // 돌리기 전 기준으로 채워야 해서 맞바꾸기
   const boxH = sideways ? w : h
   const scale = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight)
   const dw = img.naturalWidth * scale
   const dh = img.naturalHeight * scale
+  
   ctx.save()
   ctx.beginPath()
   ctx.rect(x, y, w, h) // 칸 밖으로 삐져나온 부분은 자르기
@@ -60,7 +62,7 @@ function drawCover(ctx, img, x, y, w, h, rotation) {
   ctx.restore()
 }
 
-export async function composeImage({ template, photos, rotations = [], frameColor = '#1B1A22', date = '' }) {
+export async function composeImage({ template, photos, rotations = [], frameColor = '#1B1A22', frameStyle = 'solid', date = '' }) {
   const frameW = FRAME_WIDTH[template.id] ?? 220
   const cols = template.cols
   const slotCount = template.slots
@@ -78,9 +80,46 @@ export async function composeImage({ template, photos, rotations = [], frameColo
   const ctx = canvas.getContext('2d')
   ctx.scale(SCALE, SCALE) // 이제부터는 미리보기 크기 그대로 좌표를 쓰면 돼요
 
-  // 1) 프레임 바탕
-  ctx.fillStyle = frameColor
-  ctx.fillRect(0, 0, frameW, frameH)
+  // 1) 프레임 바탕 (패턴 적용)
+  if (frameStyle === 'solid') {
+    ctx.fillStyle = frameColor
+    ctx.fillRect(0, 0, frameW, frameH)
+  } else if (frameStyle === 'gradient') {
+    const grad = ctx.createLinearGradient(0, 0, frameW, frameH)
+    grad.addColorStop(0, frameColor)
+    grad.addColorStop(1, '#ffffff')
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, frameW, frameH)
+  } else {
+    // 반복될 20x20 미니 패턴 캔버스 만들기
+    const patCanvas = document.createElement('canvas')
+    patCanvas.width = 20
+    patCanvas.height = 20
+    const pCtx = patCanvas.getContext('2d')
+
+    pCtx.fillStyle = frameColor
+    pCtx.fillRect(0, 0, 20, 20)
+    pCtx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+
+    if (frameStyle === 'stripe') {
+      pCtx.beginPath()
+      pCtx.moveTo(0, 0); pCtx.lineTo(10, 0); pCtx.lineTo(0, 10); pCtx.fill()
+      pCtx.beginPath()
+      pCtx.moveTo(20, 20); pCtx.lineTo(10, 20); pCtx.lineTo(20, 10); pCtx.fill()
+      pCtx.beginPath()
+      pCtx.moveTo(20, 0); pCtx.lineTo(0, 20); pCtx.lineTo(10, 20); pCtx.lineTo(20, 10); pCtx.fill()
+    } else if (frameStyle === 'check') {
+      pCtx.fillRect(0, 0, 10, 10)
+      pCtx.fillRect(10, 10, 10, 10)
+    } else if (frameStyle === 'dot') {
+      pCtx.beginPath()
+      pCtx.arc(10, 10, 4, 0, Math.PI * 2)
+      pCtx.fill()
+    }
+    
+    ctx.fillStyle = ctx.createPattern(patCanvas, 'repeat')
+    ctx.fillRect(0, 0, frameW, frameH)
+  }
 
   // 2) 사진 칸마다 그리기 (사진이 없는 칸은 회색)
   const images = await Promise.all(photos.map((p) => (p ? loadImage(p) : null)))
@@ -124,11 +163,14 @@ export function captureFromVideo(video, ratio, mirror = false, filter = 'none') 
   }
   const sx = (vw - sw) / 2
   const sy = (vh - sh) / 2
+  
   const canvas = document.createElement('canvas')
   canvas.width = sw
   canvas.height = sh
   const ctx = canvas.getContext('2d')
+  
   if (filter && filter !== 'none') ctx.filter = filter // [지은] 추가: 이후에 그리는 그림에 필터가 적용돼요
+  
   if (mirror) {
     ctx.translate(canvas.width, 0)
     ctx.scale(-1, 1)
