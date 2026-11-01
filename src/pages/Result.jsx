@@ -28,7 +28,7 @@ const getToday = () => {
 }
 
 export default function Result() {
-  const { template, shots, slots, frameColor, rotations = [], resetAll } = usePhoto()
+  const { template, shots, slots, frameColor, frameStyle, rotations = [], resetAll } = usePhoto()
   const slotPhotos = slots.map((idx) => (idx == null ? null : shots[idx]))
 
   const [date] = useState(getToday)
@@ -40,8 +40,8 @@ export default function Result() {
     if (slotPhotos.length === 0 || slotPhotos.some((p) => p == null)) return
     let cancelled = false
     const slotRotations = slots.map((idx) => (idx == null ? 0 : rotations[idx] ?? 0))
-    composeImage({ template, photos: slotPhotos, rotations: slotRotations, frameColor, date })
-      .then((url) => { if (!cancelled) setComposed(url) })
+    comcomposeImage({ template, photos: slotPhotos, rotations: slotRotations, frameColor, frameStyle, date })
+  .then((url) => { if (!cancelled) setComposed(url) })
       .catch(() => { if (!cancelled) setComposed(null) })
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,7 +110,7 @@ export default function Result() {
         {composed ? (
           <img className="result-image" src={composed} alt="완성된 네 컷 사진" />
         ) : (
-          <FrameView template={template} photos={slotPhotos} color={frameColor} />
+          <FrameView template={template} photos={slotPhotos} color={frameColor} pattern={frameStyle} />
         )}
       </div>
 
